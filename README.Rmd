@@ -31,4 +31,5 @@ pak::pak("drcaprosser/chrisdoc")
 
 ## Example
 
-You can see an example document [here](inst/examples/chrisdoc_example.pdf)
+You can see an example document [here](inst/examples/chrisdoc_example.pdf?raw=1)
+

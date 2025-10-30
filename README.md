@@ -21,5 +21,7 @@ pak::pak("drcaprosser/chrisdoc")
 
 ## Example
 
-You can see an example document
-[here](inst/examples/chrisdoc_example.pdf)
+\<\<\<\<\<\<\< Updated upstream You can see an example document
+[here](inst/examples/chrisdoc_example.pdf?raw=1) ======= You can see an
+example document [here](inst/examples/chrisdoc_example.pdf?)
+\>\>\>\>\>\>\> Stashed changes
