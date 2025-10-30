@@ -4,3 +4,9 @@
 .httr-oauth
 .DS_Store
 .quarto
+chrisdoc.Rproj
+dev/
+scratch/
+local/
+.Renviron
+.Rprofile

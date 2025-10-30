@@ -33,3 +33,16 @@ message("Rendered to ", dest_pdf)
 
 # Optional: nuke the scratch dir (comment this out if you want to inspect logs)
 # fs::dir_delete(tmp_out)
+
+
+
+library(magick)
+
+imgs <- image_read_pdf("inst/examples/chrisdoc_example.pdf", density = 200) # rasterise
+
+# write selected pages
+image_write(imgs[1], path = "man/figures/template_title.png", format = "png")
+image_write(imgs[2], path = "man/figures/template_body.png",  format = "png")
+image_write(imgs[10], path = "man/figures/template_lorem.png",  format = "png")
+image_write(imgs[5], path = "man/figures/template_figures.png",  format = "png")
+image_write(imgs[8], path = "man/figures/template_tables.png",  format = "png")
