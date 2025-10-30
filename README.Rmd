@@ -29,7 +29,12 @@ You can install the development version of chrisdoc from [GitHub](https://github
 pak::pak("drcaprosser/chrisdoc")
 ```
 
-## Example
+## Template design
 
 You can see an example document [here](inst/examples/chrisdoc_example.pdf?raw=1)
 
+<<<<<<< HEAD
+You can see an example document [here](inst/examples/chrisdoc_example.pdf?raw=1)
+
+=======
+>>>>>>> c975aca (Fix pdf link)
