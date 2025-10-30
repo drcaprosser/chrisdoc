@@ -1,2 +1,6 @@
 ^chrisdoc\.Rproj$
 ^\.Rproj\.user$
+^dev$
+^dev/.*$
+^README\.Rmd$
+^LICENSE\.md$

@@ -1,0 +1,522 @@
+---
+title: "The Chrisdoc R Markdown Template"
+subtitle: "Custom typsetting, plus handy bits of code"
+author:
+  - |
+      Christopher Prosser^[\faUniversity\ Royal Holloway, University of London\newline
+      \faGlobe\ \href{https://caprosser.com/}{caprosser.com}\newline
+      \faEnvelope\ \href{mailto:chris.prosser@rhul.ac.uk}{chris.prosser@rhul.ac.uk}]
+abstract: "This is an R Markdown template for writing academic papers. This document explains the template and demonstrates its typography. This bit of the paper is what the abstract looks like. 
+\\newline
+\\newline
+\\textbf{Keywords:} R Markdown; Typography; Template"
+# Add keywords by appending this to the end of the absract
+# \\newline
+# \\newline
+# \\textbf{Keywords:} Keyword 1; Keyword 2; Keyword 3 etc
+date: "`r DescTools::Format(Sys.Date(), fmt = 'd mmmm yyyy')`"
+papersize: a4
+linestretch: 1 # Linespacing (multiples of the default lineskip)
+geometry:
+  - margin=1.6in
+  # - showframe # Uncomment to add frame (useful for debugging whether stuff is overflowing the margins)
+output:
+   chrisdoc::pdf_chrisdoc:
+    number_sections: false
+    keep_tex: yes
+classoption: twoside # Only really necessary if you want different headers on odd and even pages
+toc: no
+always_allow_html: true
+header-includes:
+  # Put paper type (Working paper, For peer review, Accepted version etc) here. Leave {} blank to omit
+  - \renewcommand{\coverstatus}{Template example}
+  # Add extra notes for the title page here.  Leave {} blank to omit
+  - \renewcommand{\TitlePageNote}{The cover page has space for three types of footnotes (1) author information, (2) acknowledgements etc (this bit of text), and (3) version date. The icons come from \texttt{fontawesome5}, which includes thousands of icons, including useful ones such as ORCID \faOrcid\ and GitHub \faGithub, and more frivolous ones you could use to indicate the paper was written on a beach \faUmbrellaBeach.}
+  # Fancy page numbering, delete or comment out to turn off
+  - \def\usefancypagecount{}
+  # Headers
+  - \renewcommand{\MainHeaderOdd}{The chrisdoc R Markdown template}
+  - \renewcommand{\MainHeaderEven}{Template example}
+  - \renewcommand{\ApdxHeaderOdd}{Appendix to the chrisdoc R Markdown template}
+  - \renewcommand{\ApdxHeaderEven}{Template example appendix}
+  - \renewcommand{\SetHeadruleWidth}{0pt}
+  # To control floats
+  - \usepackage{float}
+  - \floatplacement{table}{H}
+  # For drawing tikz diagrams, including a custom dashed long left-right arrow
+  - \usepackage{tikz, tikz-cd}\usetikzlibrary{arrows.meta}\newcommand{\longdashleftrightarrow}[1][1.75em]{\mathrel{\tikz[baseline]{\draw[dash pattern=on 0.25em off 0.1 em,<->](0,.58ex)--(#1,.58ex)}}}
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+library(tidyverse)
+library(chrisplot) # `remotes::install_github("drcaprosser/chrisplot")`
+library(sysfonts) 
+library(showtext)
+library(knitr)
+library(kableExtra)
+library(modelsummary)
+
+# Various shenanigans to get figures to scale correctly with different page size and margins. 
+paper_width_in <- function(paper) {
+  switch(tolower(paper),
+    "a4" = 8.27, "a4paper" = 8.27,
+    "letter" = 8.5, "letterpaper" = 8.5,
+    8.27  # default A4
+  )
+}
+
+paper_height_in <- function(paper) {
+  switch(tolower(paper),
+    "a4" = 11.7, "a4paper" = 11.7,
+    "letter" = 11, "letterpaper" = 11,
+    11.7  # default A4
+  )
+}
+
+
+geom <- rmarkdown::metadata$geometry %||% character(0)
+paper <- rmarkdown::metadata$papersize %||% rmarkdown::metadata$classoption %||% "a4paper"
+
+marg_in <- 1
+if (length(geom)) {
+  m <- str_match(paste(geom, collapse = ","), "margin\\s*=\\s*([0-9.]+)\\s*(in|mm)")
+  if (!is.na(m[1,1])) {
+    val <- as.numeric(m[1,2]); unit <- m[1,3]
+    marg_in <- if (unit == "mm") val / 25.4 else val
+  }
+}
+
+text_width_in <- paper_width_in(paper) - 2*marg_in
+if (!is.finite(text_width_in) || text_width_in <= 0) text_width_in <- 5.5  # fallback
+
+text_height_in <- paper_height_in(paper) - 2*marg_in
+if (!is.finite(text_height_in) || text_height_in <= 0) text_height_in <- 5.5  # fallback
+
+# Set chunk options
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  message = FALSE, 
+  warning = FALSE, 
+  cache = FALSE, 
+  dev       = "cairo_pdf",      
+  fig.ext   = "pdf",
+  fig.align = "center",
+  fig.asp   = 1/see::golden_ratio(),  
+  fig.width = text_width_in,                      
+  out.width = "\\linewidth",    
+  fig.pos = "H", out.extra = "")
+
+# Modelsummary options
+options(modelsummary_factory_latex = 'kableExtra')
+
+# Set ggplot defaults
+
+showtext_auto(enable = TRUE) 
+theme_set(theme_academic()) 
+
+
+```
+
+This is a `R Markdown` template for writing academic papers and turning them into pdfs. It aims to produces elegantly and professionally typeset documents with minimal fuss at the writing stage. This document serves both as a explanation and example of the template design. The typesetting happens by adding a \LaTeX preamble to `bookdown::pdf_document2` and settings in the `yaml`. The `Rmd` part of the template also contains code for things such plots, tables, and Ti*k*Z diagrams that are not necessary for typesetting but (a) show what different things look like using the template, and (b) I use all the time, so it is useful for me to put them all in one place.
+
+# Why bother making and using a template?
+
+This is a question I asked myself many times when this ended up taking much longer than I thought it would.[^1]
+
+[^1]: Thanks \LaTeX \ldots
+
+    Since this is the first footnote, it seems the appropriate place to note that footnotes are indented to the right of their footnote marker (and not the default hanging indent approach).
+
+The short answer is I like things that look nice; I think this looks nice. There are plenty of existing templates out there, many of them look good, none of them look quite how I wanted.
+
+The more intellectual answer is that as much as we might wish that our readers would judge our work on the basis of its content, aesthetics matter. Nice typography can put people in a better mood [@larson]. Perceptual fluency influences judgments about truth [@reber1999]. Good design can influence assessments of scholarly interest and scientific rigour [@cheng2022]. You might as well put your best foot forward.
+
+Mostly though, I just like things to look nice.
+
+# Installation and use
+
+I made this template for my own use, but if you also write things in `R Markdown`, feel free to use it too. If you do use the template, please let me know---that would make my day. If you don't like it, don't tell me---make your own.
+
+You can find the template on `GitHub` here: [github.com/drcaprosser/chrisdoc](https://github.com/drcaprosser/chrisdoc). In `R` you can install the template like so:
+
+> `remotes::install_github("drcaprosser/chrisdoc")`
+
+There are two versions of the template in the package, a 'max' version, which has all the typesetting plus bits of example code, and a 'min' version, which is just a blank document with the typesetting elements.
+
+Since I made this for my own use, the author field is pre-populated with my information. If you end up using it on a regular basis you might want to fork the `GitHub` repository and edit the `.Rmd` files to put your own information in.
+
+Also since I made this for my own use, a disclaimer: please consider the template to be in perpetual beta---I might change my mind on things such as fonts in the future, and will implement those changes if I feel like it. I'll try not to make any breaking changes---I don't want to break my own old projects---but no guarantees.
+
+At some point I'll probably port this over to `Quarto` but because of a combination of path dependency (`R Markdown` does what I want it to, and I have used it for years) and some equivalent functions being missing in `R Studio` (specifically, the inability to load a template via File \rightarrow New File \rightarrow Quarto Document), I'm sticking with `R Markdown` for now.
+
+# The template design
+
+Typesetting is driven by my own aesthetic preferences, strongly influenced by *Butterick's Practical Typography*.[^2] One obvious feature of the template is the relatively wide margins. There are good reasons for this. As Butterick puts it:
+
+[^2]: <https://practicaltypography.com/>
+
+> Shorter lines are more comfortable to read than longer lines. As line length increases, your eye has to travel farther from the end of one line to the beginning of the next, making it harder to track your progress vertically. Aim for an average line length of 45–90 characters, including spaces.
+
+Using the default (1.6 inch) margins, a block of *Lorem ipsum* boilerplate has a mean line length of 89.25 characters. I originally made the margins even wider, but it squished the plots too much. Large margins also leave plenty of rooms for scribbling notes.
+
+Font choice and line spacing are based on recommendations from Butterick. The main font is Source Serif 4. Headings and captions use \textsf{Source Sans~3}. Code chunks and the like use `Source Code Pro`. Butterick doesn't have any recommendations for maths fonts, but $STIX \ Two \ Math$ looks nice to me, so I've used that. The main font is 12pt, and default line spacing is 130% of that.
+
+The text is fully justified, and uses hyphenation for long words that run across line breaks. It also uses hanging punctuation (i.e. punctuation that occurs at the end of a line is set slightly outside the margin to create a clean edge). These are all inherited from `bookdown::pdf_document2`, but I would have set them this way manually if they were not.
+
+Section and subsection headers are unnumbered by default (though that is easy to change in the `yaml`), appear in bold, with extra space around them to denote a break in text (with decreasing font size and space as you move down the header hierarchy).
+
+# Headers
+
+The template includes the option to have different headers on odd and even pages. These are set via some short code in `header-includes` bit of the `yaml`. If you don't want headers, you can leave them blank. Headers are typeset in \headerdemo{grey small-caps Source Sans~3}. By default there is no headrule, but if you want one you can edit the `SetHeadruleWidth` bit of code in the `header-includes` bit of the `yaml`.
+
+# Page numbers
+
+There are two options for page numbering:
+
+1.  'Fancy' \headerdemo{Page x of y} style numbers, typeset the same way as the headers.
+
+2.  Ordinary numerals (1, 2, 3 etc).[^3]
+
+[^3]: Since this is a list, this seems like a good place to note that the template uses slightly more compact list spacing than the defaults.
+
+To turn off fancy page numbers, just get rid of the `usefancypagecount` line from the `header-includes` bit of the `yaml`.
+
+# Figures
+
+By default, `ggplot2` figures are drawn using `theme_academic` from my `chrisplot` package, which follows similar ~~stylistic prejudices~~ aesthetic principles as this template, and also uses \textsf{Source Sans~3}, so hopefully they look nice together.[^4]
+
+[^4]: See: [github.com/drcaprosser/chrisplot](https://github.com/drcaprosser/chrisplot). 
+
+    To install: `remotes::install_github("drcaprosser/chrisplot")`.
+
+The setup chunk contains a bunch of functions and chunk options that control figures size based on page size/margins and the golden ratio. The purpose of this code is to align figures nicely with the text and make the fonts the same size as the text. `chrisplot` uses very narrow plot margins, so plots should take up nearly all of the space between the page margins. I wanted to make the plot margins zero, so it took up all of the space, but the lower right x-axis label tended to get clipped off. I might figure out a solution to this at some point.
+
+Potentially my most controversial choice regarding figures is that they do not float. I understand the arguments for floating from a typographical perspective---it minimises unnecessary white space, which looks ugly. But as a *reader* I have always found floated figures and tables irritating---coming across a floated figure before it is mentioned in the text breaks the flow of reading, as does searching high and low for a table that has been floated beyond the horizon. Floating also devalues the role of figures and tables in academic writing---they are not mere decoration but key to scientific reporting. You wouldn't float the paragraphs setting out your theory; don't float your figures.[^5]
+
+[^5]: This doesn't mean I think you should ignore whitespace problems---you should try to avoid them as much as possible. But such problems are better solved by a bit of thought about where a figure should appear, rather than relying on an algorithm.
+
+Figure captions use \textsf{Source Sans~3}, with the caption type and number bolded and followed by a colon. Captions are justified differently depending on the length of the caption. Figure \@ref(fig:aplot) shows a plot with a long caption, and figure \@ref(fig:anotherplot) shows a plot with a short caption. Figure \@ref(fig:fullpageplot) show a full portrait page plot while figure \@ref(fig:alandplot) shows a full landscape page plot. Full page plots need manually set chunk `fig.asp` options to look nice. The template R Markdown has further comments about the aspect ratios that fit the default margins.
+
+```{r aplot, fig.cap = "This is a plot with a long caption. Sometimes captions need to have lots of information in them. Mostly that is because plots need proper explanation, particularly because people often skip to them first rather than waiting till they get to the relevant part of the paper. Othertimes you need a long captions because a style guide has dictated you need to re-explain your legend in text form. When captions run longer than one line, as this one does, captions are fully justified."}
+
+set.seed(25101)
+
+tibble(x = rnorm(100),
+       y = x + rnorm(100),
+       z = sample(c("A", "B", "C", "D"), 100, replace = TRUE)) %>% 
+  ggplot(aes(x = x , y = y, colour = z)) +
+  geom_point(alpha = .5) +
+  xlab("X") +
+  ylab("Y") 
+
+  
+```
+
+```{r anotherplot, fig.cap = "Short captions are centered."}
+
+set.seed(25102)
+
+tibble(cat = c("A baseline", "First comparison", "Second Comparison", "Third Comparison", "Fourth Comparison", "Fifth Comparison", "Sixth Comparison"),
+       outcome = rnorm(7, sd = 3),
+       se = rnorm(7, 1, sd = .1),
+       conf.low = outcome - 1.96*se,
+       conf.high = outcome + 1.96*se) %>% 
+  mutate(cat = factor(cat, levels = c("A baseline", "First comparison", "Second Comparison", "Third Comparison", "Fourth Comparison", "Fifth Comparison", "Sixth Comparison")),
+) %>% 
+  ggplot(aes(y = cat , x = outcome, xmin = conf.low, xmax = conf.high, colour = cat)) +
+  geom_vline(xintercept = 0) +
+  geom_errorbar() +
+  geom_point() +
+  xlab("An outcome of interest") +
+  ylab(NULL) +
+  scale_y_discrete(lim = rev) +
+  theme(legend.position = "none")
+
+```
+
+```{r fullpageplot, fig.cap = "A plot that takes up a full page.", fig.asp = 1.62}
+
+# For full page plots, fig.asp might need tweaking to get the figure + caption to fit within the margins. With my defaults, fig.asp = 1.62 seems about right for a one line caption, 1.59 for two lines, 1.56 for three lines. To finetune, add - showframe to the geometry yaml.
+
+
+set.seed(271025)
+
+map(1:8, function(this_facet){
+  
+  tibble(thing = paste0("Facet ", this_facet),
+         x = 1:10, 
+         y = cumsum(rnorm(10)))
+  
+}) %>% 
+  list_rbind() %>% 
+  ggplot(aes(x = x, y = y, colour = thing)) +
+  geom_line() +
+  facet_wrap(~thing, ncol = 2) +
+  theme(legend.position = "none")
+
+
+```
+
+\blandscape
+
+```{r alandplot, fig.cap = "This is a plot on a landscape page. ", fig.width = text_height_in, fig.asp  = .56}
+
+# For landscape plots, fig.asp might need tweaking to get the figure + caption to fit within the margins. With my defaults, fig.asp = .56 seems about right for a one line caption, .54 for two lines, .52 for three lines. To finetune, add - showframe to the geometry yaml. You can usually tell its got too big for the margins because it will produce an extra blank landscape page.
+set.seed(25103)
+
+bind_rows(
+  
+  tibble(panel = "A facet",
+         Thing = "A",
+         time = 1:10,
+         value = rnorm(10, mean = 1),
+         cum = cumsum(value)),
+  
+  tibble(panel = "A facet",
+         Thing = "B",
+         time = 1:10,
+         value = rnorm(10, mean = 1),
+         cum = cumsum(value)),
+  
+  tibble(panel = "A facet",
+         Thing = "C",
+         time = 1:10,
+         value = rnorm(10, mean = 1),
+         cum = cumsum(value)), 
+  
+  tibble(panel = "Another facet",
+         Thing = "B",
+         time = 1:10,
+         value = rnorm(10, mean = 1),
+         cum = cumsum(value)),
+  
+  tibble(panel = "Another facet",
+         Thing = "C",
+         time = 1:10,
+         value = rnorm(10, mean = 1),
+         cum = cumsum(value)),
+  
+  tibble(panel = "Another facet",
+         Thing = "D",
+         time = 1:10,
+         value = rnorm(10, mean = 1),
+         cum = cumsum(value))
+) %>% 
+  ggplot(aes(x = time , y = cum, fill = Thing)) +
+  geom_area() +
+  xlab("Time period") +
+  ylab("Outcome") +
+  facet_wrap(~panel)
+
+
+```
+
+\elandscape
+
+# Tables
+
+I generally use `kable` and `kableExtra` to make tables. The `kable` and `kableExtra` packages use the unmaintained and apparently broken `tabu` \LaTeX\ package, so at some point I'll start using something else. The most likely candidate is `tinytable`, because Vincent Arel-Bundock's other packages (`modelsummary` and `marginaleffects`) are amazing and I use them all the time, but I'll have to figure out how to do the things I already know how to do with `kable`, so for now I'm staying put\ldots
+
+Tables are typeset in \textsf{Source Sans~3}, as shown in table \@ref(tab:atable). 
+
+Like figures, tables do not float. Table captions have the same style as figure captions.
+
+```{r atable}
+
+tibble(
+  Letters = LETTERS[seq(1, 7)],
+  `Some numbers` = seq(1, 7),
+  `More numbers` = seq(8, 14),
+  `Some decimals` = 1/`Some numbers`,
+  `More decimals` = 1/`More numbers`,
+) %>% 
+  kable(
+    caption = "This is a table.", 
+    format = "latex", 
+    booktabs = TRUE, 
+    format.args = list(big.mark = ","),
+    digits = 2,
+    linesep = "",
+    )  %>% 
+  add_header_above(c(" " = 1, "Numbers" = 2, "Decimals" = 2))
+
+```
+
+I use `modelsummary` to make regression tables, using the `kableExtra` backend, which produces output like that shown in table \@ref(tab:regtable).
+
+```{r regtable}
+
+set.seed(2720252)
+
+some_data <- tibble(z = rnorm(1000),
+                    x = z + rnorm(1000),
+                    y = z + rnorm(1000))
+
+
+mod1 <- some_data %>% 
+  lm(y ~ x, .)
+
+mod2 <- some_data %>% 
+  lm(y ~ z, .)
+
+mod3 <- some_data %>% 
+  lm(y ~ x + z, .)
+
+
+this_gof_map <- tribble(
+  ~raw,        ~clean, ~fmt,
+  "nobs",      "N",    function(x) sprintf("\\multicolumn{1}{c}{%s}", formatC(x, format = "d")),
+  "r.squared", "$R^2$",function(x) sprintf("\\multicolumn{1}{c}{%s}", formatC(x, digits = 2, format = "f"))
+)
+
+modelsummary(
+  model =list(mod1, mod2, mod3),
+  stars = TRUE,
+  fmt = fmt_significant(1),
+  gof_map = this_gof_map,
+  coef_map = c("x" = "Key variable for your theory",
+               "z" = "Some annoying confound",
+               "(Intercept)" = "Intercept"),
+  caption = "This is a regression table with a long caption to demonstrate the text justification behaviour of captions. The models show a classic observational research pattern.", 
+  align = "lddd",
+  escape=FALSE) %>% 
+  add_header_above(c(" ", "Bivariate" = 2, "Multivariate"))
+
+```
+
+# Maths
+
+Equation \@ref(eq:egeq) shows some maths. This is a changepoint model that comes from a paper I co-authored about class voting in Britain from 1885--2024 that is currently under review, I put it here so you can see what the font looks like.
+
+\begin{equation}
+(\#eq:egeq)
+y_t = \alpha + \beta_0 t + \sum_{j=1}^{n} \beta_j (t - \text{cp}_j) \cdot \mathbb{I}(t > \text{cp}_j) + \epsilon_t
+\end{equation}
+
+# Ti*k*Z
+
+Occasionally, I use Ti*k*Z to draw diagrams, mostly Directed Acyclic Graphs (DAGs), like figure \@ref(fig:urdag), which shows a DAG illustrating the problem with making causal claims about just about everything. To draw DAGs I use [*q.uiver.app*](https://q.uiver.app/) and then drop the Ti*k*Z code into the document.
+
+<!-- Draw diagrams with https://q.uiver.app/ and drop the code in -->
+
+\begin{figure}[H]
+\centering
+\begin{tikzcd}
+    && U \\
+    \\
+    x &&&& y
+    \arrow[dashed, from=1-3, to=3-1]
+    \arrow[dashed, from=1-3, to=3-5]
+    \arrow[from=3-1, to=3-5]
+\end{tikzcd}
+\caption{The Ur-DAG}
+\label{fig:urdag}
+\end{figure}
+
+# Appendices
+
+The template includes code to create an appendix section at the end of the document, which inserts a cover page, pipes in the title of the paper from the `yaml` and adds a table of contents. The appendix uses separate section, figure, table and page numbering to the main document. Having an appendix in the same document makes cross referencing easy. See for example, figure \@ref(fig:appendixplot) in appendix \@ref(appendixOne).
+
+To start the appendix, just put
+
+> `\appendix`
+
+in the body of the Rmd after the reference section.
+
+The appendix has the option for different headers on odd and even pages that are separate to the main text. It also uses slightly different page numbering styles. With fancy page numbering you get \begingroup \sffamily\scshape\color{black!60}\fontsize{11}{12}\selectfont
+Appendix page x of y%
+\endgroup\ and with ordinary page numbering you get numerals prefixed with an 'A' (A1, A2, A3 etc). 
+
+When you submit something to a journal you generally have to submit the appendix as a separate file, but it is easy to split a pdf file up. There is some code in appendix \@ref(appendixPDFsplit) to help you do that, which also shows the template's custom code highlighting theme, which uses the same colour palette as the default `chrisplot` palette.
+
+\newpage
+
+Here is a page of boilerplate text so you can see the different levels of section and subsection headings.
+
+# A section
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+## A subsection
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+### A subsubsection
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\newpage
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+\appendix
+
+# Example appendix {#appendixOne}
+
+Here's an appendix with an extra plot in it.
+
+```{r appendixplot, fig.cap = "This is a plot in the appendix."}
+
+tibble(x = rnorm(1000),
+       z = sample(c("A", "B"), 1000, replace = TRUE),
+       e = rnorm(1000),
+       y = case_when(z == "A" ~ x + e,
+                     z == "B" ~ e)) %>% 
+  ggplot(aes(x = x , y = y, colour = z, fill = z)) +
+  geom_smooth() +
+  xlab("X") +
+  ylab("Y")
+
+```
+
+\newpage
+
+# PDF splitting code {#appendixPDFsplit}
+Here's some code to split a pdf into different parts. Copy this into an `R` script and edit the file paths and names to match your documents.
+
+```{r pdfsplit, echo = TRUE, eval = FALSE}
+# Split pdfs into main text and appendices
+
+library(pdftools)
+
+pdf_file <- "file_path_to_your_document_here.pdf"
+pdf_text <- pdf_text(pdf_file)
+
+# Find first page of appendix
+
+target_page <- grep("Appendix to", pdf_text)[1]
+
+# Split document into title page, main document, and appendix
+
+# Standalone title page
+
+pdf_subset(pdf_file,
+           pages = 1:1, 
+           output = "title_page.pdf")
+
+# Main document
+# If you need it without the title page
+# Set `pages = 2:(target_page-1)`
+
+pdf_subset(pdf_file,
+           pages = 1:(target_page-1), 
+           output = "main_document.pdf")
+
+# Appendix
+
+pdf_subset(pdf_file,
+           pages = target_page:length(pdf_text), 
+           output = "appendix.pdf")
+```
+

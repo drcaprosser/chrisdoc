@@ -1,0 +1,250 @@
+---
+title: "Initial paper draft"
+# subtitle: "Subtitle here"
+author:
+  - |
+      Christopher Prosser^[\faUniversity\ Royal Holloway, University of London\newline
+      \faGlobe\ \href{https://caprosser.com/}{caprosser.com}\newline
+      \faEnvelope\ \href{mailto:chris.prosser@rhul.ac.uk}{chris.prosser@rhul.ac.uk}]
+abstract: "Everyone agrees that this issue is really important. But we do not know much about this specific question, although it matters a great deal, for these reasons. We approach the problem from this perspective. Our research design focuses on these cases and relies on these data, which we analyse using this method. Results show what we have learned about the question. They have these broader implications"
+# Add keywords by appending this to the end of the absract
+# \\newline
+# \\newline
+# \\textbf{Keywords:} Keyword 1; Keyword 2; Keyword 3 etc
+date: "`r DescTools::Format(Sys.Date(), fmt = 'd mmmm yyyy')`"
+papersize: a4
+linestretch: 1 # Linespacing (multiples of the default lineskip)
+geometry:
+  - margin=1.6in
+  # - showframe # Uncomment to add frame (useful for debugging whether stuff is overflowing the margins)
+output:
+   chrisdoc::pdf_chrisdoc:
+    number_sections: false
+    keep_tex: yes
+classoption: twoside # Only really necessary if you want different headers on odd and even pages
+toc: no
+always_allow_html: true
+header-includes:
+  # Put paper type (Working paper, For peer review, Accepted version etc) here. Leave {} blank to omit
+  - \renewcommand{\coverstatus}{Working paper}
+  # Add extra notes for the title page here.  Leave {} blank to omit
+  - \renewcommand{\TitlePageNote}{}
+  # Fancy page numbering, delete or comment out to turn off
+  - \def\usefancypagecount{}
+  # Headers
+  - \renewcommand{\MainHeaderOdd}{}
+  - \renewcommand{\MainHeaderEven}{}
+  - \renewcommand{\ApdxHeaderOdd}{}
+  - \renewcommand{\ApdxHeaderEven}{}
+  - \renewcommand{\SetHeadruleWidth}{0pt}
+  # To control floats
+  - \usepackage{float}
+  - \floatplacement{table}{H}
+  # For drawing tikz diagrams, including a custom dashed long left-right arrow
+  - \usepackage{tikz, tikz-cd}\usetikzlibrary{arrows.meta}\newcommand{\longdashleftrightarrow}[1][1.75em]{\mathrel{\tikz[baseline]{\draw[dash pattern=on 0.25em off 0.1 em,<->](0,.58ex)--(#1,.58ex)}}}
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+library(tidyverse)
+library(chrisplot) # `remotes::install_github("drcaprosser/chrisplot")`
+library(sysfonts) 
+library(showtext)
+library(knitr)
+library(kableExtra)
+library(modelsummary)
+
+# Create a bib file if there isn't one
+if (!file.exists("references.bib")) {
+  writeLines(c(
+    "@article{example2025,",
+    "  title   = {An example reference},",
+    "  author  = {Doe, Jane},",
+    "  journal = {Journal of Examples},",
+    "  year    = {2025},",
+    "  volume  = {1},",
+    "  number  = {1},",
+    "  pages   = {1--10},",
+    "}"
+  ), "references.bib", useBytes = TRUE)
+}
+
+# Various shenanigans to get figures to scale correctly with different page size and margins. 
+paper_width_in <- function(paper) {
+  switch(tolower(paper),
+    "a4" = 8.27, "a4paper" = 8.27,
+    "letter" = 8.5, "letterpaper" = 8.5,
+    8.27  # default A4
+  )
+}
+
+paper_height_in <- function(paper) {
+  switch(tolower(paper),
+    "a4" = 11.7, "a4paper" = 11.7,
+    "letter" = 11, "letterpaper" = 11,
+    11.7  # default A4
+  )
+}
+
+
+geom <- rmarkdown::metadata$geometry %||% character(0)
+paper <- rmarkdown::metadata$papersize %||% rmarkdown::metadata$classoption %||% "a4paper"
+
+marg_in <- 1
+if (length(geom)) {
+  m <- str_match(paste(geom, collapse = ","), "margin\\s*=\\s*([0-9.]+)\\s*(in|mm)")
+  if (!is.na(m[1,1])) {
+    val <- as.numeric(m[1,2]); unit <- m[1,3]
+    marg_in <- if (unit == "mm") val / 25.4 else val
+  }
+}
+
+text_width_in <- paper_width_in(paper) - 2*marg_in
+if (!is.finite(text_width_in) || text_width_in <= 0) text_width_in <- 5.5  # fallback
+
+text_height_in <- paper_height_in(paper) - 2*marg_in
+if (!is.finite(text_height_in) || text_height_in <= 0) text_height_in <- 5.5  # fallback
+
+# Set chunk options
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  message = FALSE, 
+  warning = FALSE, 
+  cache = TRUE, 
+  dev       = "cairo_pdf",      
+  fig.ext   = "pdf",
+  fig.align = "center",
+  fig.asp   = 1/see::golden_ratio(),  
+  fig.width = text_width_in,                      
+  out.width = "\\linewidth",    
+  fig.pos = "H", out.extra = "")
+
+# Modelsummary options
+options(modelsummary_factory_latex = 'kableExtra')
+
+# Set ggplot defaults
+
+showtext_auto(enable = TRUE) 
+theme_set(theme_academic()) 
+
+
+```
+
+Here's example code for producing figures figures and tables etc. 
+
+```{r aplot, fig.cap = "A plot."}
+
+# For full page plots, fig.asp might need tweaking to get the figure + caption to fit within the margins. With my defaults, fig.asp = 1.62 seems about right for a one line caption, 1.59 for two lines, 1.56 for three lines. To finetune, add - showframe to the geometry yaml.
+
+# For landscape plots, wrap the figure in \blandscape  and \blandscape, and tweak fig.asp to get the figure + caption to fit within the margins. With my defaults, fig.asp = .56 seems about right for a one line caption, .54 for two lines, .52 for three lines. To finetune, add - showframe to the geometry yaml. You can usually tell its got too big for the margins because it will produce an extra blank landscape page.
+
+set.seed(25101)
+
+tibble(x = rnorm(100),
+       y = x + rnorm(100),
+       z = sample(c("A", "B", "C", "D"), 100, replace = TRUE)) %>% 
+  ggplot(aes(x = x , y = y, colour = z)) +
+  geom_point(alpha = .5) +
+  xlab("X") +
+  ylab("Y") 
+
+  
+```
+
+
+```{r atable}
+
+tibble(
+  Letters = LETTERS[seq(1, 7)],
+  `Some numbers` = seq(1, 7),
+  `More numbers` = seq(8, 14),
+  `Some decimals` = 1/`Some numbers`,
+  `More decimals` = 1/`More numbers`,
+) %>% 
+  kable(
+    caption = "This is a table.", 
+    format = "latex", 
+    booktabs = TRUE, 
+    format.args = list(big.mark = ","),
+    digits = 2,
+    linesep = "",
+    )  %>% 
+  add_header_above(c(" " = 1, "Numbers" = 2, "Decimals" = 2))
+
+```
+
+```{r regtable}
+
+set.seed(2720252)
+
+some_data <- tibble(z = rnorm(1000),
+                    x = z + rnorm(1000),
+                    y = z + rnorm(1000))
+
+
+mod1 <- some_data %>% 
+  lm(y ~ x, .)
+
+mod2 <- some_data %>% 
+  lm(y ~ z, .)
+
+mod3 <- some_data %>% 
+  lm(y ~ x + z, .)
+
+
+this_gof_map <- tribble(
+  ~raw,        ~clean, ~fmt,
+  "nobs",      "N",    function(x) sprintf("\\multicolumn{1}{c}{%s}", formatC(x, format = "d")),
+  "r.squared", "$R^2$",function(x) sprintf("\\multicolumn{1}{c}{%s}", formatC(x, digits = 2, format = "f"))
+)
+
+modelsummary(
+  model =list(mod1, mod2, mod3),
+  stars = TRUE,
+  fmt = fmt_significant(1),
+  gof_map = this_gof_map,
+  coef_map = c("x" = "Key variable for your theory",
+               "z" = "Some annoying confound",
+               "(Intercept)" = "Intercept"),
+  caption = "This is a regression table.", 
+  align = "lddd",
+  escape=FALSE) %>% 
+  add_header_above(c(" ", "Bivariate" = 2, "Multivariate"))
+
+```
+
+
+# Ti*k*Z
+
+Figure \@ref(fig:urdag)  shows a DAG illustrating the problem with making causal claims about just about everything.
+
+<!-- Draw diagrams with https://q.uiver.app/ and drop the code in -->
+
+\begin{figure}[H]
+\centering
+\begin{tikzcd}
+    && U \\
+    \\
+    x &&&& y
+    \arrow[dashed, from=1-3, to=3-1]
+    \arrow[dashed, from=1-3, to=3-5]
+    \arrow[from=3-1, to=3-5]
+\end{tikzcd}
+\caption{The Ur-DAG}
+\label{fig:urdag}
+\end{figure}
+
+
+<!-- Leave this bit for references -->
+\newpage
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+<!-- Uncomment the below for an appendix -->
+<!-- \appendix -->
+
+<!-- # Example appendix {#appendixOne} -->

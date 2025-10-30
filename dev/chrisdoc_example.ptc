@@ -1,0 +1,24 @@
+\contentsline {section}{Why bother making and using a template?}{1}{section*.1}%
+\contentsline {section}{Installation and use}{1}{section*.2}%
+\contentsline {section}{The template design}{2}{section*.3}%
+\contentsline {section}{Headers}{2}{section*.4}%
+\contentsline {section}{Page numbers}{3}{section*.5}%
+\contentsline {section}{Figures}{3}{section*.6}%
+\contentsline {section}{Tables}{7}{section*.11}%
+\contentsline {section}{Maths}{8}{section*.14}%
+\contentsline {section}{Ti\emph {k}Z}{8}{section*.15}%
+\contentsline {section}{Appendices}{8}{section*.17}%
+\contentsline {section}{A section}{9}{section*.18}%
+\contentsline {subsection}{A subsection}{9}{subsection*.19}%
+\contentsline {subsubsection}{A subsubsection}{9}{subsubsection*.20}%
+\contentsline {section}{References}{10}{subsubsection*.20}%
+\ttl@starttoc {appendixtoc@1}
+\ttl@change@i {\@ne }{section}{0em}{\addvspace {1em}}{\makebox [1em][l]{\thecontentslabel }\hspace {1em}}{}{\titlerule *[0.5pc]{.}\contentspage }\relax 
+\ttl@change@v {section}{}{}{}\relax 
+\ttl@change@i {\@ne }{subsection}{2em}{\addvspace {0.5em}}{\makebox [2em][l]{\thecontentslabel }\hspace {1em}}{}{\titlerule *[0.5pc]{.}\contentspage }\relax 
+\ttl@change@v {subsection}{}{}{}\relax 
+\ttl@change@i {\@ne }{subsubsection}{5em}{\addvspace {0.5em}}{\makebox [3em][l]{\thecontentslabel }\hspace {1em}}{}{\titlerule *[0.5pc]{.}\contentspage }\relax 
+\ttl@change@v {subsubsection}{}{}{}\relax 
+\contentsline {section}{\numberline {A1}Example appendix}{1}{appendix.A}%
+\contentsline {section}{\numberline {A2}PDF splitting code}{2}{appendix.B}%
+\contentsfinish 

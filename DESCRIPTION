@@ -1,13 +1,18 @@
 Package: chrisdoc
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Type: Package
+Title: Chris Prosser’s R Markdown Template
+Version: 0.0.1
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person(given = "Chris",
+           family = "Prosser",
+           role = c("aut","cre"),
+           email = "chris.prosser@rhul.ac.uk")
+Description: An R Markdown PDF template with a LaTeX preamble,
+    fonts, plus handy bits of R code.
+License: MIT + file LICENSE
 Encoding: UTF-8
+Depends: R (>= 3.6)
+Imports: rmarkdown
+Suggests: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-URL: https://github.com/drcaprosser/chrisdoc
-BugReports: https://github.com/drcaprosser/chrisdoc/issues
