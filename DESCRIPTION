@@ -1,7 +1,7 @@
 Package: chrisdoc
 Type: Package
 Title: Chris Prosser’s R Markdown Template
-Version: 0.0.1.9000
+Version: 0.1.0
 Authors@R: 
     person(given = "Chris",
            family = "Prosser",
