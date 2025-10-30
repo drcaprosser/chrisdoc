@@ -32,9 +32,3 @@ pak::pak("drcaprosser/chrisdoc")
 ## Template design
 
 You can see an example document [here](inst/examples/chrisdoc_example.pdf?raw=1)
-
-<<<<<<< HEAD
-You can see an example document [here](inst/examples/chrisdoc_example.pdf?raw=1)
-
-=======
->>>>>>> c975aca (Fix pdf link)
