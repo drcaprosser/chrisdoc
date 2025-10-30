@@ -19,7 +19,7 @@ You can install the development version of chrisdoc from
 pak::pak("drcaprosser/chrisdoc")
 ```
 
-## Example
+## Template design
 
 You can see an example document
-[here](inst/examples/chrisdoc_example.pdf)
+[here](inst/examples/chrisdoc_example.pdf?raw=1)
