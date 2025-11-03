@@ -4,7 +4,7 @@
 # chrisdoc
 
 This is a `R Markdown` template for writing academic papers and turning
-them into pdfs. It aims to produces elegantly and professionally typeset
+them into pdfs. It aims to produce elegantly and professionally typeset
 documents with minimal fuss at the writing stage.
 
 <p align="center">
