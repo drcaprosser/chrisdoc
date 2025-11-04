@@ -73,6 +73,8 @@ Path=\chrisdocfontpath
 \usepackage{enumitem}
 \setlist{topsep = 0pt, itemsep = 0pt}
 
+
+
 % Make all tabular environments use sans font by default
 
 \AtBeginEnvironment{tabular}{\sffamily}
@@ -83,6 +85,13 @@ Path=\chrisdocfontpath
 
 \usepackage{siunitx}
 
+% d column stuff
+\newcolumntype{d}{S[
+  table-align-text-before=false,
+  table-align-text-after=false,
+  input-symbols={-,\*+()}
+  ]}
+
 % Make number columns follow the surrounding font and styles
 \sisetup{
   detect-mode = true,
@@ -90,6 +99,7 @@ Path=\chrisdocfontpath
   detect-weight = true,
   detect-shape = true
 }
+
 
 % Title stuff
 \makeatletter
